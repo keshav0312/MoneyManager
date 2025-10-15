@@ -1,107 +1,82 @@
 package com.moneymanger.moneytracker.service;
 
 import com.moneymanger.moneytracker.entity.ProfileEntity;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.core.io.ByteArrayResource;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SendEmailService {
 
-    private final JavaMailSender mailSender;
+    @Value("${BREVO_API_KEY}")
+    private String apiKey;
 
-    @Value("${spring.mail.from}")
+    @Value("${FROM_EMAIL}")
     private String fromEmail;
 
-    /* ====================== NORMAL EMAIL ====================== */
-    public void sendMail(String to, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromEmail);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
+    @Value("${FROM_NAME:MoneyTracker}")
+    private String fromName;
 
-        mailSender.send(message);
-        log.info("Plain text email sent to {}", to);
+    private static final String BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
+
+    /* ====================== SIMPLE HTML EMAIL ====================== */
+    public void sendMail(String to, String subject, String htmlBody) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("sender", Map.of("name", fromName, "email", fromEmail));
+        payload.put("to", List.of(Map.of("email", to)));
+        payload.put("subject", subject);
+        payload.put("htmlContent", htmlBody);
+
+        sendEmailRequest(payload);
     }
 
-//    public void sendHtmlMail(String to, String subject, String htmlBody) throws MessagingException, UnsupportedEncodingException {
-//        MimeMessage message = mailSender.createMimeMessage();
-//        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8"); // true = multipart, UTF-8 for emojis
-//
-//        helper.setFrom(fromEmail, "MoneyManager"); // professional sender name
-//        helper.setTo(to);
-//        helper.setSubject(subject);
-//        helper.setText(htmlBody, true); // true = HTML content
-//
-//        mailSender.send(message);
-//        log.info("HTML email sent to {}", to);
-//    }
+    /* ====================== EMAIL WITH ATTACHMENT ====================== */
+    public void sendEmailWithAttachment(ProfileEntity profile, String subject, byte[] attachment, String fileName, boolean isIncome) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("sender", Map.of("name", fromName, "email", fromEmail));
+        payload.put("to", List.of(Map.of("email", profile.getEmail())));
+        payload.put("subject", subject);
+        payload.put("htmlContent", isIncome ? generateIncomeEmailHTML(profile) : generateExpenseEmailHTML(profile));
 
-
-
-    /* ====================== ATTACHMENT EMAIL ====================== */
-    public void sendEmailWithAttachemnt(String to, String subject, String body, byte[] attachment, String fileName) throws MessagingException {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-        helper.setFrom(fromEmail);
-        helper.setTo(to);
-        helper.setSubject(subject);
-        helper.setText(body); // plain text body
-        helper.addAttachment(fileName, new ByteArrayResource(attachment));
-
-        mailSender.send(message);
-        log.info("Email with attachment sent to {} as {}", to, fileName);
-    }
-
-    public void sendHtmlMail(String to, String subject, String htmlBody) throws MessagingException, UnsupportedEncodingException {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail, "MoneyManager");
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlBody, true);
-
-            mailSender.send(message);
-            log.info("HTML email sent successfully to {}", to);
-
-        } catch (Exception e) {
-            log.error("Failed to send HTML email to {}: {}", to, e.getMessage(), e);
-            throw e; // Re-throw to see the actual error
+        if (attachment != null && attachment.length > 0) {
+            Map<String, Object> file = new HashMap<>();
+            file.put("content", Base64.getEncoder().encodeToString(attachment));
+            file.put("name", fileName);
+            payload.put("attachment", List.of(file));
         }
+
+        sendEmailRequest(payload);
     }
 
-    /* ====================== FANCY HTML EMAIL WITH ATTACHMENT ====================== */
-    public void sendHtmlEmailWithAttachment(ProfileEntity profile, String subject, byte[] attachment, String fileName, boolean isIncome) throws MessagingException, UnsupportedEncodingException {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+    /* ====================== MAKE REST CALL TO BREVO ====================== */
+    private void sendEmailRequest(Map<String, Object> payload) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("api-key", apiKey);
 
-        String htmlBody = isIncome ? generateIncomeEmailHTML(profile) : generateExpenseEmailHTML(profile);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(BREVO_API_URL, entity, String.class);
 
-        helper.setFrom(fromEmail, "MoneyTracker");
-        helper.setTo(profile.getEmail());
-        helper.setSubject(subject);
-        helper.setText(htmlBody, true); // HTML content
-        helper.addAttachment(fileName, new ByteArrayResource(attachment));
-
-        mailSender.send(message);
-        log.info("HTML email sent to {} with attachment {}", profile.getEmail(), fileName);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Email sent successfully: {}", response.getBody());
+            } else {
+                log.error("Failed to send email: {}", response.getBody());
+            }
+        } catch (Exception e) {
+            log.error("Exception while sending email: {}", e.getMessage(), e);
+        }
     }
 
     /* ====================== HTML TEMPLATE FOR INCOME ====================== */
