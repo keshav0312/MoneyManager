@@ -1,32 +1,39 @@
-#server:
-#  port: 8081
-#  servlet:
-#    context-path: /api/v1.0
-#
-#spring:
-#  datasource:
-#    url: jdbc:mysql://localhost:3306/moneymanager
-#    username: root
-#    password: tiger@data
-#  jpa:
-#    hibernate:
-#      ddl-auto: update
-#    show-sql: true
-#    properties:
-#      hibernate:
-#        format_sql: true
-#
-#  mail:
-#    host: smtp-relay.brevo.com
-#    port: 587
-#    username: 98e632001@smtp-brevo.com
-#    password: T7E6rUfOhxMSKcAs
-#    protocol: smtp
-#    properties:
-#      mail:
-#        smtp:
-#          auth: true
-#          starttls.enable: true
-#    from: keshavchoudhary550@gmail.com
-#
-#
+server:
+  port: 8081
+  servlet:
+    context-path: /api/v1.0
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/moneymanager
+    username: root
+    password: tiger@data
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  mail:
+    host: smtp-relay.brevo.com
+    port: 587
+    username: 98e632001@smtp-brevo.com
+    password: T7E6rUfOhxMSKcAs
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls.enable: true
+    from: keshav84628@gmail.com
+
+cron:
+  daily:
+    remainder:
+      email:
+        time: ${CRON_DAILY_REMAINDER_EMAIL_TIME}
+    summary:
+      email:
+        time: ${CRON_DAILY_SUMMARY_EMAIL_TIME}

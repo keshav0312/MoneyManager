@@ -30,11 +30,13 @@ public class NotificationService {
    private  String  cronExpression;
 
 
-    @Scheduled(cron = "${cron.daily_remainder}", zone = "Asia/Kolkata")
+  @Scheduled(cron = "${cron.daily.remainder.email.time}", zone = "Asia/Kolkata")
     public void sendDailyExpensesRemainder() {
         log.info("Job started: sendDailyExpensesRemainder");
 
         List<ProfileEntity> profileEntities = profileRepository.findAll();
+
+        log.info(profileEntities.toString());
 
         for (ProfileEntity profileEntity : profileEntities) {
             String email = profileEntity.getEmail();
@@ -83,7 +85,7 @@ public class NotificationService {
         log.info("Job completed: Daily expense reminder emails sent successfully!");
     }
     // Scheduled to run every day at 11:00 PM IST
-    @Scheduled(cron = "${cron.expire.time}", zone = "Asia/Kolkata")
+ @Scheduled(cron = "${cron.daily.summary.email.time}", zone = "Asia/Kolkata")
     public void sendDailyExpensesSummary() {
         log.info("Job started: sendDailyExpensesSummary");
 
@@ -182,6 +184,14 @@ public class NotificationService {
         }
 
         log.info("Job completed: Daily expense summary emails sent successfully!");
+    }
+
+//    @Scheduled(cron = "0 * * * * *",zone = "Asia/Kolkata")
+    public  void testingMail()
+    {
+        sendEmailService.sendMail("keshavchoudhary719@gmail.com","this is just testing mail","test the mail working or not thanks for visiting agian..");
+        log.info("testing mail send successfully!");
+
     }
 }
 
