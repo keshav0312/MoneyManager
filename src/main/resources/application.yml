@@ -1,13 +1,19 @@
-server:
-  port: 8081
-  servlet:
-    context-path: /api/v1.0
-
 spring:
+  application:
+    name: moneytracker
+
+  # Server Configuration
+  profiles:
+    active: prod
+
+  # Database Configuration
   datasource:
-    url: jdbc:mysql://localhost:3306/moneymanager
-    username: root
-    password: tiger@data
+    url: jdbc:postgresql://dpg-d3ncvoa4d50c73cj5a20-a.oregon-postgres.render.com/dbmanager_jr4n
+    username: dbmanager_jr4n_user
+    password: frhmjIkpfP9Rel4txmwZX3b3FvjkiCHc
+    driver-class-name: org.postgresql.Driver
+
+  # JPA Configuration
   jpa:
     hibernate:
       ddl-auto: update
@@ -15,7 +21,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  # Email Configuration
   mail:
     host: smtp-relay.brevo.com
     port: 587
@@ -26,14 +34,31 @@ spring:
       mail:
         smtp:
           auth: true
-          starttls.enable: true
-    from: keshav84628@gmail.com
+          starttls:
+            enable: true
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
 
-cron:
-  daily:
-    remainder:
-      email:
-        time: ${CRON_DAILY_REMAINDER_EMAIL_TIME}
-    summary:
-      email:
-        time: ${CRON_DAILY_SUMMARY_EMAIL_TIME}
+
+# Server Configuration
+server:
+  port: 8081
+  servlet:
+    context-path: /api/v1.0
+
+
+
+
+
+# Cron Configuration
+  cron:
+    daily:
+      remainder:
+        email:
+          time:
+            ${CRON_DAILY_REMAINDER_EMAIL_TIME: "0 0 9 * * *" }  # Daily at 9 AM
+      summary:
+        email:
+          time:
+            ${CRON_DAILY_SUMMARY_EMAIL_TIME: "0 0 20 * * *" }   # Daily at 8 PM
