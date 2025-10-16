@@ -36,15 +36,15 @@ server:
 
 
 # Cron Configuration
-  cron:
-    daily:
-      remainder:
-        email:
-          time:
-            ${CRON_DAILY_REMAINDER_EMAIL_TIME:  0 * * * * *}  # Daily at 9 AM
-      summary:
-        email:
-          time:
-            ${CRON_DAILY_SUMMARY_EMAIL_TIME: 0 * * * * *}   # Daily at 8 PM
-
-
+#  cron:
+#    daily:
+#      remainder:
+#        email:
+#          time:
+#            ${CRON_DAILY_REMAINDER_EMAIL_TIME:  0 * * * * *}  # Daily at 9 AM
+#      summary:
+#        email:
+#          time:
+#            ${CRON_DAILY_SUMMARY_EMAIL_TIME: 0 * * * * *}   # Daily at 8 PM
+#
+#
