@@ -64,8 +64,3 @@ server:
             ${CRON_DAILY_SUMMARY_EMAIL_TIME: 0 0 20 * * *}   # Daily at 8 PM
 
 
-BREVO:
-  API:
-    KEY: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
-FROM:
-  EMAIL:keshavchoudhary550@gmail.com

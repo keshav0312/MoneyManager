@@ -1,14 +1,13 @@
 package com.moneymanger.moneytracker.service;
 
 import com.moneymanger.moneytracker.entity.ProfileEntity;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.core.io.ByteArrayResource;
+
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -19,31 +18,27 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SendEmailService {
 
-//    @Value("${BREVO.API}")
-    private String apiKey="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";
-//
-//    @Value("${FROM}")
-    private String fromEmail="keshavchoudhary550@gmail.com";
+    @Value("${brevo.api.key}")  // Use environment variables
+    private String apiKey;
+
+    @Value("${brevo.sender.email}")  // Use environment variables
+    private String fromEmail;
 
     @Value("${FROM_NAME:MoneyTracker}")
     private String fromName;
 
-    @PostConstruct
-    public void testApiKey() {
-        System.out.println("BREVO_API_KEY loaded: " + (apiKey != null ? "✅ YES" : "❌ NO"));
-    }
-
-
+    private final RestTemplate restTemplate;
 
     private static final String BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
-
-//    private static final String BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
-
     /* ====================== SIMPLE HTML EMAIL ====================== */
     public void sendMail(String to, String subject, String htmlBody) {
-        log.info(fromEmail);
-        log.info("BREVO_API_URL: " + apiKey);
+        log.info("Sending email to: {}", to);
+        log.info("Sender email: {}", fromEmail);
+
+        // Don't log the API key!
+        log.debug("API Key present: {}", apiKey != null ? "Yes" : "No");
+
         Map<String, Object> payload = new HashMap<>();
         payload.put("sender", Map.of("name", fromName, "email", fromEmail));
         payload.put("to", List.of(Map.of("email", to)));
@@ -74,25 +69,31 @@ public class SendEmailService {
     /* ====================== MAKE REST CALL TO BREVO ====================== */
     private void sendEmailRequest(Map<String, Object> payload) {
         try {
-            RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("api-key", apiKey);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+
+            log.info("Sending request to Brevo API for: {}", payload.get("to"));
+
             ResponseEntity<String> response = restTemplate.postForEntity(BREVO_API_URL, entity, String.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("Email sent successfully: {}", response.getBody());
+                log.info("✅ Email sent successfully to: {}", payload.get("to"));
             } else {
-                log.error("Failed to send email: {}", response.getBody());
+                log.error("❌ Failed to send email. Status: {}, Response: {}",
+                        response.getStatusCode(), response.getBody());
             }
         } catch (Exception e) {
-            log.error("Exception while sending email: {}", e.getMessage(), e);
+            log.error("❌ Exception while sending email to {}: {}",
+                    payload.get("to"), e.getMessage());
+            // Log the full error for debugging (remove in production)
+            log.debug("Full error details:", e);
         }
     }
 
-    /* ====================== HTML TEMPLATE FOR INCOME ====================== */
+    // ... rest of your HTML template methods remain the same
     private String generateIncomeEmailHTML(ProfileEntity profile) {
         return "<!DOCTYPE html>" +
                 "<html><head><style>" +
@@ -112,7 +113,6 @@ public class SendEmailService {
                 "</div></body></html>";
     }
 
-    /* ====================== HTML TEMPLATE FOR EXPENSE ====================== */
     private String generateExpenseEmailHTML(ProfileEntity profile) {
         return "<!DOCTYPE html>" +
                 "<html><head><style>" +
