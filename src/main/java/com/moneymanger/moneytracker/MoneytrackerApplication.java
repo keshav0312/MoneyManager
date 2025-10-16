@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 
 @EnableScheduling
 @SpringBootApplication
+@CrossOrigin(origins = "https://moneymanagerwebap.netlify.app")
 public class MoneytrackerApplication {
 
 	public static void main(String[] args) {

@@ -29,7 +29,7 @@ public class SecurityConfiguration {
     private final ApplicationUserDetailService applicationUserDetailService;
     private final JwtRequestFilter jwtRequestFilter;
 
-      @Value("${money.manager.frontend.url}")
+      @Value("${money.manager.frontend.url:https://moneymanagerwebap.netlify.app")
          private String frontUrl;
     public SecurityConfiguration(ApplicationUserDetailService applicationUserDetailService, JwtRequestFilter jwtRequestFilter) {
         this.applicationUserDetailService = applicationUserDetailService;
