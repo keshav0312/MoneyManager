@@ -1,6 +1,7 @@
 package com.moneymanger.moneytracker.service;
 
 import com.moneymanger.moneytracker.entity.ProfileEntity;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,19 +19,31 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SendEmailService {
 
-    @Value("${BREVO_API_KEY}")
-    private String apiKey;
-
-    @Value("${FROM_EMAIL}")
-    private String fromEmail;
+//    @Value("${BREVO.API}")
+    private String apiKey="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";
+//
+//    @Value("${FROM}")
+    private String fromEmail="keshavchoudhary550@gmail.com";
 
     @Value("${FROM_NAME:MoneyTracker}")
     private String fromName;
 
+    @PostConstruct
+    public void testApiKey() {
+        System.out.println("BREVO_API_KEY loaded: " + (apiKey != null ? "✅ YES" : "❌ NO"));
+    }
+
+
+
     private static final String BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
+
+
+//    private static final String BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
     /* ====================== SIMPLE HTML EMAIL ====================== */
     public void sendMail(String to, String subject, String htmlBody) {
+        log.info(fromEmail);
+        log.info("BREVO_API_URL: " + apiKey);
         Map<String, Object> payload = new HashMap<>();
         payload.put("sender", Map.of("name", fromName, "email", fromEmail));
         payload.put("to", List.of(Map.of("email", to)));

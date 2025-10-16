@@ -45,7 +45,7 @@ public class EmailController {
         excelService.writeIncomesToExcel(outputStream, incomeService.getAllIcomesforCurrentUser());
 
         // Send HTML email with attachment
-        sendEmailService.sendHtmlEmailWithAttachment(profile,
+        sendEmailService.sendEmailWithAttachment(profile,
                 "Income Report - MoneyTracker",
                 outputStream.toByteArray(),
                 "income.xlsx",
@@ -62,7 +62,7 @@ public class EmailController {
         excelService.writeExpensesToExcel(outputStream, expenseService.getAllexpensesforCurrentUser());
 
         // Send HTML email with attachment
-        sendEmailService.sendHtmlEmailWithAttachment(profile,
+        sendEmailService.sendEmailWithAttachment(profile,
                 "Expense Report - MoneyTracker",
                 outputStream.toByteArray(),
                 "expense.xlsx",

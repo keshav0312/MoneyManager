@@ -104,7 +104,7 @@ public class ProfileService   {
                 "</body>" +
                 "</html>";
 
-        sendEmailService.sendHtmlMail(profileEntity11.getEmail(), subject, body);
+        sendEmailService.sendMail(profileEntity11.getEmail(), subject, body);
         return profileDTO1;
 
     }catch (Exception e)
