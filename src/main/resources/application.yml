@@ -23,22 +23,6 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  # Email Configuration
-#  mail:
-#    host: smtp-relay.brevo.com
-#    port: 587
-#    username: 98e632001@smtp-brevo.com
-#    password: T7E6rUfOhxMSKcAs
-#    protocol: smtp
-#    properties:
-#      mail:
-#        smtp:
-#          auth: true
-#          starttls:
-#            enable: true
-#          connectiontimeout: 10000
-#          timeout: 10000
-#          writetimeout: 10000
 
 
 # Server Configuration
