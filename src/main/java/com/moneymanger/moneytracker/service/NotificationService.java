@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class NotificationService {
 
     private final ExpenseService expenseService;
@@ -86,6 +88,7 @@ public class NotificationService {
     }
     // Scheduled to run every day at 11:00 PM IST
  @Scheduled(cron = "${cron.daily.summary.email.time}", zone = "Asia/Kolkata")
+ @Transactional(readOnly = true)
     public void sendDailyExpensesSummary() {
         log.info("Job started: sendDailyExpensesSummary");
 

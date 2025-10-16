@@ -40,6 +40,7 @@ public class ProfileService   {
 
 //
 //  @Value("${app.activation.url}")
+    @Value("${app.activation.url}")
       private String backend_url;
 
 

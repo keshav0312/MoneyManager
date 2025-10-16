@@ -12,6 +12,7 @@ import com.moneymanger.moneytracker.service.ProfileService;
 import jakarta.mail.Header;
 import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,9 @@ import java.util.Map;
 @RestController
 @Slf4j
 public class ProfileController {
+
+    @Value("${money.manager.frontend.url}")
+   private String frontendUrl;
 
     private final CategoryService categoryService;
     private ProfileService profileService;
@@ -58,9 +62,9 @@ public class ProfileController {
 
         String redirectUrl;
         if (activated) {
-            redirectUrl = "http://localhost:5173/activation_success";
+            redirectUrl = frontendUrl+ "/activation_success";
         } else {
-            redirectUrl = "http://localhost:5173/activation_fail";
+            redirectUrl = frontendUrl+"/activation_fail";
         }
       HttpHeaders headers = new HttpHeaders();
         headers.add("Location", redirectUrl);

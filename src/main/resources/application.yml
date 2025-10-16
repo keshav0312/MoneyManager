@@ -57,10 +57,10 @@ server:
       remainder:
         email:
           time:
-            ${CRON_DAILY_REMAINDER_EMAIL_TIME:  0 0 9 * * *}  # Daily at 9 AM
+            ${CRON_DAILY_REMAINDER_EMAIL_TIME:  0 * * * * *}  # Daily at 9 AM
       summary:
         email:
           time:
-            ${CRON_DAILY_SUMMARY_EMAIL_TIME: 0 0 20 * * *}   # Daily at 8 PM
+            ${CRON_DAILY_SUMMARY_EMAIL_TIME: 0 * * * * *}   # Daily at 8 PM
 
 
