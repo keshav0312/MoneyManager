@@ -5,6 +5,7 @@ import com.moneymanger.moneytracker.service.ApplicationUserDetailService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -24,13 +25,14 @@ import java.util.List;
 @Configuration
 public class SecurityConfiguration {
 
-
     private final ApplicationUserDetailService applicationUserDetailService;
     private final JwtRequestFilter jwtRequestFilter;
 
-      @Value("${money.manager.frontend.url:https://moneymanagerwebap.netlify.app}")
-         private String frontUrl;
-    public SecurityConfiguration(ApplicationUserDetailService applicationUserDetailService, JwtRequestFilter jwtRequestFilter) {
+    @Value("${money.manager.frontend.url}")
+    private String frontUrl;
+
+    public SecurityConfiguration(ApplicationUserDetailService applicationUserDetailService,
+                                 JwtRequestFilter jwtRequestFilter) {
         this.applicationUserDetailService = applicationUserDetailService;
         this.jwtRequestFilter = jwtRequestFilter;
     }
@@ -39,15 +41,24 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .cors(Customizer.withDefaults()) // use corsConfigurationSource bean
-                .csrf(AbstractHttpConfigurer::disable) // disable CSRF for API
+                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-                        .requestMatchers("/status/**", "/health/**", "/login/**", "/register/**", "/activate/**").permitAll()
-                        // All other requests require authentication
+                        // ✅ allow preflight requests
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // ✅ public endpoints
+                        .requestMatchers(
+                                "/status/**",
+                                "/health/**",
+                                "/login/**",
+                                "/register/**",
+                                "/activate/**"
+                        ).permitAll()
+
                         .anyRequest().authenticated()
                 )
-                .httpBasic(Customizer.withDefaults()) // optional, can remove if using JWT only
+                .httpBasic(Customizer.withDefaults())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -58,30 +69,30 @@ public class SecurityConfiguration {
         return new BCryptPasswordEncoder();
     }
 
-    // ✅ CORS configuration
+    // ✅ FIXED CORS CONFIG
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Your React frontend origin
-        configuration.setAllowedOriginPatterns(List.of(frontUrl));
+        // ❌ was setAllowedOriginPatterns
+        // ✅ must be setAllowedOrigins
+        configuration.setAllowedOrigins(List.of(frontUrl));
 
-        // Allowed HTTP methods
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(
+                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        );
 
-        // Allowed headers
         configuration.setAllowedHeaders(List.of("*"));
-
-        // Allow cookies / Authorization headers
         configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
 
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
-    // ✅ AuthenticationManager with DaoAuthenticationProvider
     @Bean
     public AuthenticationManager authenticationManager() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
