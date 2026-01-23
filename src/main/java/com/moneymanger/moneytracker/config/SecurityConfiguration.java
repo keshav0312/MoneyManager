@@ -49,6 +49,7 @@ public class SecurityConfiguration {
 
                         // ✅ public endpoints
                         .requestMatchers(
+                                "/voice/**",
                                 "/status/**",
                                 "/health/**",
                                 "/login/**",

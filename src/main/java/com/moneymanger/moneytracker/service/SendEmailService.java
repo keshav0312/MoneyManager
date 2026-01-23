@@ -1,8 +1,10 @@
 package com.moneymanger.moneytracker.service;
 
+import com.moneymanger.moneytracker.GlobalExceptionHandler.ResourceNotFoundException;
 import com.moneymanger.moneytracker.entity.ProfileEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -18,8 +20,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SendEmailService {
 
-    @Value("${brevo.api.key}")
+     @Value("${brevo.api.key}")
     private String apiKey;
+
 
     @Value("${brevo.sender.email}")
     private String fromEmail;
@@ -42,6 +45,8 @@ public class SendEmailService {
             log.error("❌ Sender email is not configured");
             return;
         }
+
+
 
         log.info("Sending email to: {}, Subject: {}", to, subject);
 
